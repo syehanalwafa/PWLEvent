@@ -1,7 +1,8 @@
-const mysql = require('mysql2/promise');
+// db.js
+const mysql = require('mysql2');
 require('dotenv').config();
 
-const db = mysql.createConnection({
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -9,9 +10,6 @@ const db = mysql.createConnection({
   port: process.env.DB_PORT,
 });
 
-db.connect((err) => {
-  if (err) throw err;
-  console.log('Connected to MySQL database');
-});
+const db = pool.promise(); // langsung bisa pakai async/await
 
 module.exports = db;
