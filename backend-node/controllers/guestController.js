@@ -1,47 +1,24 @@
-const pool = require('../config/db');
-const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// GET /api/events  – ambil event aktif
-exports.getActiveEvents = async (_req, res) => {
-  try {
-    const [rows] = await pool.query(
-      `SELECT event_id, name, date, time, location, speaker,
-              poster_url, registration_fee, max_participants
-       FROM events
-       WHERE is_active = 1
-       ORDER BY date, time`
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// POST /api/register – guest → member
-exports.registerMember = async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password)
-    return res.status(400).json({ message: 'Nama, email, dan password wajib diisi' });
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
 
   try {
-    // cek email unik
-    const [exist] = await pool.query('SELECT 1 FROM users WHERE email = ?', [email]);
-    if (exist.length)
-      return res.status(409).json({ message: 'Email sudah terdaftar' });
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const user = users[0];
 
-    const hash = await bcrypt.hash(password, 10);
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Email atau password salah' });
+    }
 
-    const [result] = await pool.query(
-      `INSERT INTO users (name, email, password, role, status)
-       VALUES (?,?,?,?,?)`,
-      [name, email, hash, 'Member', 'ACTIVE']
-    );
+    const token = jwt.sign({
+      user_id: user.user_id,
+      name: user.name,
+      role: user.role
+    }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
-    res.status(201).json({
-      message: 'Registrasi berhasil',
-      user_id: result.insertId
-    });
+    res.json({ token, role: user.role, name: user.name });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
