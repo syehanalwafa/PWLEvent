@@ -2,6 +2,9 @@
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
+Route::get('/', function () {
+    return view('guest.home');
+});
 Route::view('/login', 'login');
 Route::post('/login', function (\Illuminate\Http\Request $request) {
     $response = Http::post('http://localhost:5000/api/auth/login', [
