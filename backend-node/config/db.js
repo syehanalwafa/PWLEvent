@@ -12,4 +12,14 @@ const pool = mysql.createPool({
 
 const db = pool.promise(); // langsung bisa pakai async/await
 
+// Tes koneksi
+db.getConnection()
+  .then(connection => {
+    console.log('Database connection successful');
+    connection.release(); // Melepaskan koneksi
+  })
+  .catch(err => {
+    console.error('Database connection failed:', err);
+  }); 
+
 module.exports = db;

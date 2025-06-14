@@ -1,4 +1,7 @@
 <?php
+
+namespace App\Http\Controllers;
+
   use App\Services\ApiService;
   use Illuminate\Http\Request;
 

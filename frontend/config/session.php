@@ -19,6 +19,8 @@ return [
     */
 
     'driver' => env('SESSION_DRIVER', 'database'),
+    'cookie' => env('SESSION_COOKIE', 'laravel_session'),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -156,7 +158,8 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    'domain' => env('SESSION_DOMAIN', null),
+    'secure' => false, // jika belum pakai HTTPS
 
     /*
     |--------------------------------------------------------------------------
