@@ -15,7 +15,8 @@
 
     app.use('/api', require('./routes/guestRoutes'));
     app.use('/api/auth', require('./routes/authRoutes'));
-
+    app.use('/api/admin', require('./routes/adminRoutes')); // Menambahkan admin routes
+    
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Backend on port ${PORT}`));
