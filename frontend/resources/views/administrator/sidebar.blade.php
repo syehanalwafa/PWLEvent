@@ -20,7 +20,7 @@
 
     <div class="sidebar-menu">
         <ul>
-            <li><a href="{{ url('/admin') }}"><i class="fa fa-tachometer-alt"></i> Dashboard Admin</a></li>
+            <li><a href="{{ url('/admin') }}"><i class="fa fa-tachometer-alt"></i> Dashboard </a></li>
             <li><a href="{{ url('/admin/users/create') }}"><i class="fa fa-user-plus"></i> Tambah Pengguna</a></li>
         </ul>
     </div>

@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('guest.home');
@@ -21,6 +22,7 @@ if ($response->successful()) {
     Session::put('token', $response['token']);
     Session::put('role', $response['role']);
     Session::put('name', $response['name']);  // Memastikan 'name' dari JSON disimpan dengan benar
+
     return redirect($response['redirectUrl']);
 }
     return redirect('/login')->with('error', 'Login gagal. Cek email dan password.');
@@ -78,16 +80,6 @@ Route::get('/admin/users/{id}/edit', function ($id) {
 });
 
 
-Route::put('/admin/users/{id}', function ($id, \Illuminate\Http\Request $request) {
-    $response = Http::put('http://localhost:5000/api/admin/users/'.$id, $request->all());
-
-    if ($response->successful()) {
-        return redirect('/admin')->with('success', 'Pengguna berhasil diperbarui');
-    }
-
-    return redirect('/admin')->with('error', 'Gagal memperbarui pengguna');
-});
-
 // delete
 Route::delete('/admin/users/{id}', function ($id) {
     $response = Http::delete('http://localhost:5000/api/admin/users/'.$id);
@@ -134,8 +126,96 @@ Route::get('/tim-keuangan', function () {
 
 // Rute untuk Tim Panitia Kegiatan
 Route::get('/panitia-kegiatan', function () {
-    return view('timpanitiakegiatan.panitia-kegiatan');  // Halaman untuk Tim Panitia Kegiatan
+    // Pastikan pengguna sudah login dan memiliki role 'panitia pelaksana kegiatan'
+        // Mengambil data event dari backend API
+        $response = Http::get('http://localhost:5000/api/events');  // Gantilah dengan URL API yang benar
+
+        // Jika API berhasil memberikan data
+        if ($response->successful()) {
+            $events = $response->json();  // Mengambil data event dalam bentuk array
+
+            // Kirim data ke view
+            return view('timpanitiakegiatan.dashboard', ['events' => $events]);  // Akses 'data' jika respons mengandung key 'data'
+        } else {
+            // Jika API gagal, tampilkan pesan error
+            return redirect('/login')->with('error', 'Gagal mengambil data event');
+        }
+
+    return redirect('/login')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
 })->name('panitia-kegiatan');
+
+// CRUD routes untuk event (misalnya jika kamu ingin tetap mempertahankan controller untuk CRUD)
+// Rute untuk menampilkan form create event menggunakan metode GET
+Route::get('/panitia-kegiatan/events/create', function () {
+    return view('timpanitiakegiatan.create');
+});
+// Handle event creation form submission (POST)
+Route::post('/panitia-kegiatan/events', function (Request $request) {
+    $response = Http::post('http://localhost:5000/api/events/create', $request->all());
+
+    if ($response->successful()) {
+        return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil dibuat');
+    }
+
+    return redirect('/panitia-kegiatan/events')->with('error', 'Gagal membuat event');
+});
+
+// Route untuk menampilkan daftar event (GET)
+Route::get('/panitia-kegiatan/events', function () {
+    $response = Http::get('http://localhost:5000/api/events');  // Mengambil data event dari backend API
+
+    if ($response->successful()) {
+        $events = $response->json();  // Mengambil data event dalam bentuk array
+        return view('timpanitiakegiatan.dashboard', compact('events'));
+    }
+
+    return redirect('/panitia-kegiatan')->with('error', 'Gagal mengambil daftar event');
+});
+
+
+
+Route::get('/panitia-kegiatan/events/{id}/edit', function ($id) {
+    $response = Http::get("http://localhost:5000/api/events/{$id}");
+
+    if ($response->successful()) {
+        $event = $response->json();
+        return view('timpanitiakegiatan.edit', compact('event'));
+    }
+
+    return redirect('/panitia-kegiatan/events')->with('error', 'Gagal mengambil data event');
+});
+
+Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
+    // Ambil data yang dibutuhkan untuk diupdate
+    $data = $request->only(['name', 'date', 'location', 'speaker', 'registration_fee', 'max_participants']);
+    
+    // Mengirimkan data untuk update ke API
+    $response = Http::put("http://localhost:5000/api/events/{$id}", $data);
+
+    // Cek apakah update berhasil
+    if ($response->successful()) {
+        // Setelah update berhasil, redirect ke /panitia-kegiatan
+        return redirect('/panitia-kegiatan')->with('success', 'Event berhasil diperbarui');
+    }
+
+    // Jika gagal memperbarui event, kembali ke halaman sebelumnya dengan error
+    return redirect('/panitia-kegiatan/events/'.$id.'/edit')->with('error', 'Gagal memperbarui event');
+});
+
+
+
+
+Route::delete('/panitia-kegiatan/events/{id}', function ($id) {
+    $response = Http::delete("http://localhost:5000/api/events/{$id}");
+
+    if ($response->successful()) {
+        return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil dihapus');
+    }
+
+    return redirect('/panitia-kegiatan/events')->with('error', 'Gagal menghapus event');
+});
+
+
 
 Route::post('/logout', function () {
     Session::flush();

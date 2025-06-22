@@ -38,7 +38,7 @@ exports.login = async (req, res) => {
             case 'Tim Keuangan':
                 redirectUrl = '/tim-keuangan';
                 break;
-            case 'Tim Panitia Kegiatan':
+            case 'panitia pelaksana kegiatan':
                 redirectUrl = '/panitia-kegiatan';
                 break;
             default:
@@ -84,7 +84,7 @@ exports.register = async (req, res) => {
 
 
     // Simpan pengguna baru ke dalam database dengan role 'Member' secara otomatis
-    const [result] = await pool.query('INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)', [
+    const [result] = await pool.query('INSERT INTO users (name, email, password, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())', [
       name,
       email,
       hashedPassword,

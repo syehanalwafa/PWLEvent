@@ -16,6 +16,9 @@
     app.use('/api', require('./routes/guestRoutes'));
     app.use('/api/auth', require('./routes/authRoutes'));
     app.use('/api/admin', require('./routes/adminRoutes')); // Menambahkan admin routes
+    app.use('/api/events', require('./routes/eventRoutes'));  // Menambahkan rute event
+    // Menyajikan file di dalam folder 'uploads' untuk dapat diakses publik
+app.use('/uploads', express.static('uploads'));
     
 
     const PORT = process.env.PORT || 5000;

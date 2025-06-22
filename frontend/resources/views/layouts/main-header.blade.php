@@ -105,7 +105,13 @@
                         </div>
                       </li>
                       <li>
-                      <form method="POST" action="/logout">@csrf <button>Logout</button></form>
+                      <form method="POST" action="{{ url('/logout') }}">
+                        @csrf
+                        <button class="dropdown-item" type="submit">
+                          Logout
+                        </button>
+                      </form>
+
                       </li>
                     </div>
                   </ul>
