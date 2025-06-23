@@ -151,7 +151,31 @@ Route::get('/panitia-kegiatan/events/create', function () {
 });
 // Handle event creation form submission (POST)
 Route::post('/panitia-kegiatan/events', function (Request $request) {
-    $response = Http::post('http://localhost:5000/api/events/create', $request->all());
+    $multipartData = [];
+
+    // Tambahkan semua field selain file
+    foreach ([
+        'name', 'date', 'time', 'location',
+        'speaker', 'registration_fee', 'max_participants'
+    ] as $field) {
+        $multipartData[] = [
+            'name' => $field,
+            'contents' => $request->input($field)
+        ];
+    }
+
+    // Cek apakah file dikirim
+    if ($request->hasFile('poster_url')) {
+        $multipartData[] = [
+            'name'     => 'poster_url',
+            'contents' => fopen($request->file('poster_url')->getPathname(), 'r'),
+            'filename' => $request->file('poster_url')->getClientOriginalName(),
+        ];
+    }
+
+    // Kirim sebagai multipart
+    $response = Http::asMultipart()
+        ->post('http://localhost:5000/api/events/create', $multipartData);
 
     if ($response->successful()) {
         return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil dibuat');
@@ -186,23 +210,75 @@ Route::get('/panitia-kegiatan/events/{id}/edit', function ($id) {
 });
 
 Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
-    // Ambil data yang dibutuhkan untuk diupdate
-    $data = $request->only(['name', 'date', 'location', 'speaker', 'registration_fee', 'max_participants']);
-    
-    // Mengirimkan data untuk update ke API
-    $response = Http::put("http://localhost:5000/api/events/{$id}", $data);
+    $multipart = [];
 
-    // Cek apakah update berhasil
-    if ($response->successful()) {
-        // Setelah update berhasil, redirect ke /panitia-kegiatan
-        return redirect('/panitia-kegiatan')->with('success', 'Event berhasil diperbarui');
+    foreach (['name', 'date', 'time', 'location', 'speaker', 'registration_fee', 'max_participants'] as $field) {
+        $multipart[] = [
+            'name' => $field,
+            'contents' => $request->input($field),
+        ];
     }
 
-    // Jika gagal memperbarui event, kembali ke halaman sebelumnya dengan error
-    return redirect('/panitia-kegiatan/events/'.$id.'/edit')->with('error', 'Gagal memperbarui event');
+    $multipart[] = [
+        'name' => '_method',
+        'contents' => 'PUT',
+    ];
+
+    if ($request->hasFile('poster_url')) {
+        $file = $request->file('poster_url');
+        $multipart[] = [
+            'name'     => 'poster_url',
+            'contents' => fopen($file->getPathname(), 'r'),
+            'filename' => $file->getClientOriginalName(),
+        ];
+    }
+
+    $response = Http::asMultipart()->post("http://localhost:5000/api/events/{$id}", $multipart);
+
+    if ($response->successful()) {
+        return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil diperbarui');
+    }
+
+    return redirect("/panitia-kegiatan/events/{$id}/edit")->with('error', 'Gagal memperbarui event');
 });
 
+// Route POST untuk update event (dari form edit)
+Route::post('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
+    $multipart = [];
 
+    // Tambahkan semua field form ke multipart
+    foreach (['name', 'date', 'time', 'location', 'speaker', 'registration_fee', 'max_participants'] as $field) {
+        $multipart[] = [
+            'name' => $field,
+            'contents' => $request->input($field),
+        ];
+    }
+
+    // Override method ke PUT
+    $multipart[] = [
+        'name' => '_method',
+        'contents' => 'PUT',
+    ];
+
+    // Jika ada file poster
+    if ($request->hasFile('poster_url')) {
+        $file = $request->file('poster_url');
+        $multipart[] = [
+            'name'     => 'poster_url',
+            'contents' => fopen($file->getPathname(), 'r'),
+            'filename' => $file->getClientOriginalName(),
+        ];
+    }
+
+    // Kirim ke backend Node.js
+    $response = Http::asMultipart()->post("http://localhost:5000/api/events/{$id}", $multipart);
+
+    if ($response->successful()) {
+        return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil diperbarui');
+    }
+
+    return redirect("/panitia-kegiatan/events/{$id}/edit")->with('error', 'Gagal memperbarui event');
+});
 
 
 Route::delete('/panitia-kegiatan/events/{id}', function ($id) {
@@ -214,8 +290,6 @@ Route::delete('/panitia-kegiatan/events/{id}', function ($id) {
 
     return redirect('/panitia-kegiatan/events')->with('error', 'Gagal menghapus event');
 });
-
-
 
 Route::post('/logout', function () {
     Session::flush();

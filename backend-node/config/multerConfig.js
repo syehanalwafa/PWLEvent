@@ -1,33 +1,30 @@
 const multer = require('multer');
 const path = require('path');
 
-// Set the storage destination for uploaded images
+// Menyimpan file di folder 'uploads/'
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');  // Menyimpan di folder 'uploads'
+        cb(null, 'uploads/');  // Menyimpan file di folder 'uploads'
     },
     filename: (req, file, cb) => {
-        const fileExtension = path.extname(file.originalname); // Ekstensi file
-        const filename = Date.now() + fileExtension; // Nama file unik berdasarkan timestamp
+        const fileExtension = path.extname(file.originalname);
+        const filename = Date.now() + fileExtension;
         cb(null, filename);  // Menyimpan file dengan nama unik
     }
 });
 
-// Filter untuk hanya mengizinkan jenis file tertentu
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);  // Izinkan file jika tipe MIME cocok
-    } else {
-        cb(new Error('Only image files are allowed'), false);
-    }
-};
-
-// Initialize multer middleware
 const upload = multer({ 
-    storage, 
-    fileFilter, 
-    limits: { fileSize: 5 * 1024 * 1024 } // Maksimal 5MB untuk setiap file
+    storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+        const fileExtension = path.extname(file.originalname).toLowerCase();  // Dapatkan ekstensi file
+        if (allowedTypes.includes(file.mimetype) && ['.jpg', '.jpeg', '.png', '.gif'].includes(fileExtension)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'), false);
+        }
+    },
+    limits: { fileSize: 5 * 1024 * 1024 }  // Maksimal 5MB
 });
 
 module.exports = upload;

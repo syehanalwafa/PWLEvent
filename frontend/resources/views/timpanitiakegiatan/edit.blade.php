@@ -18,7 +18,7 @@
         <!-- Form untuk mengedit event -->
         <form action="{{ url('/panitia-kegiatan/events/'.$event['event_id']) }}" method="POST" enctype="multipart/form-data">
             @csrf
-            @method('PUT') <!-- Untuk HTTP PUT method -->
+            @method('PUT')
 
             <div class="card shadow-lg p-4">
                 <h4 class="mb-4">Event Information</h4>
@@ -71,7 +71,7 @@
                     <input type="file" class="form-control" name="poster_url">
                     @if($event['poster_url'])
                         <div class="mt-2">
-                            <img src="{{ asset('storage/' . $event['poster_url']) }}" alt="Current Poster" class="img-thumbnail" style="width: 150px;">
+                            <img src="{{ 'http://localhost:5000/uploads/' . $event['poster_url'] }}" alt="Current Poster" class="img-thumbnail" style="width: 150px;">
                             <p class="mt-2">Current Poster</p>
                         </div>
                     @endif

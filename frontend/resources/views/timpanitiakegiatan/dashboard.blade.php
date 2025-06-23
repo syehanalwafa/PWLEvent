@@ -21,18 +21,12 @@
                     <div class="col-md-4 mb-4">
                         <div class="card">
                             <!-- Menggunakan gambar event jika ada, jika tidak, gambar placeholder -->
-                            <img src="{{ asset('storage/' . $event['poster_url']) ? asset('storage/' . $event['poster_url']) : 'https://via.placeholder.com/300' }}" class="card-img-top" alt="Event Image">
+                            <img src="{{ $event['poster_url'] ? 'http://localhost:5000/uploads/' . $event['poster_url'] : 'https://via.placeholder.com/300' }}" class="card-img-top" alt="Event Image">
                             <div class="card-body">
                                 <h5 class="card-title">{{ $event['name'] }}</h5>
                                 <p class="card-text">{{ \Carbon\Carbon::parse($event['date'])->format('d-m-Y') }}</p>
                                 <p class="card-text">{{ $event['location'] }}</p>
                                 
-                                @if($event['poster_url'])
-                                    <div class="mb-3">
-                                        <img src="{{ asset('storage/' . $event['poster_url']) }}" alt="Event Poster" class="img-fluid">
-                                    </div>
-                                @endif
-
                                 <!-- Button to Update Event -->
                                 <a href="{{ url('/panitia-kegiatan/events/'.$event['event_id'].'/edit') }}" class="btn btn-primary">Update</a>
 
