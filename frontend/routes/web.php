@@ -2,10 +2,24 @@
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
+use App\Http\Controllers\GuestController;
 
+// Guest routes
 Route::get('/', function () {
-    return view('guest.home');
+    $events = Http::get('http://localhost:5000/api/events')->json();
+    return view('guest.home', compact('events'));
 });
+
+
+// Route detail event (untuk guest dan member)
+Route::get('/events/{id}', function ($id) {
+    $response = Http::get("http://localhost:5000/api/events/{$id}");
+    if ($response->successful()) {
+        $event = (object) $response->json();
+        return view('guest.event', compact('event'));
+    }
+    return redirect('/')->with('error', 'Event tidak ditemukan');
+})->name('event.show');
 
 Route::view('/register', 'guest.register')->name('register');
 
@@ -28,7 +42,16 @@ if ($response->successful()) {
     return redirect('/login')->with('error', 'Login gagal. Cek email dan password.');
 });
 
+// Rute untuk Member
+Route::get('/member', function () {
+    return view('member.member');  // Halaman untuk Member
+})->name('member');
 
+// Route for member to buy tickets
+Route::get('/member', function () {
+    $events = Http::get('http://localhost:5000/api/events')->json();
+    return view('member.home', compact('events'));
+});
 
 // Menampilkan data user
 Route::get('/admin', function () {
@@ -79,7 +102,6 @@ Route::get('/admin/users/{id}/edit', function ($id) {
     return redirect('/admin')->with('error', 'Gagal mengambil data pengguna');
 });
 
-
 // delete
 Route::delete('/admin/users/{id}', function ($id) {
     $response = Http::delete('http://localhost:5000/api/admin/users/'.$id);
@@ -113,11 +135,6 @@ Route::post('/admin/users/{id}/activate', function ($id) {
 
     return redirect('/admin')->with('error', 'Gagal mengaktifkan pengguna');
 });
-
-// Rute untuk Member
-Route::get('/member', function () {
-    return view('member.member');  // Halaman untuk Member
-})->name('member');
 
 // Rute untuk Tim Keuangan
 Route::get('/tim-keuangan', function () {
@@ -291,7 +308,6 @@ Route::post('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
 
     return redirect("/panitia-kegiatan/events/{$id}/edit")->with('error', 'Gagal memperbarui event');
 });
-
 
 Route::delete('/panitia-kegiatan/events/{id}', function ($id) {
     $response = Http::delete("http://localhost:5000/api/events/{$id}");

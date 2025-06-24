@@ -1,39 +1,10 @@
 @extends('layouts.index')
-@extends('timpanitiakegiatan.sidebar')
+
+@section('sidebar')
+    @include('timpanitiakegiatan.sidebar')
+@endsection
+
 @section('content')
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Event</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .form-label {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        .card {
-            border-radius: 10px;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-        .img-thumbnail {
-            border-radius: 8px;
-        }
-    </style>
-</head>
-<body class="bg-light">
-
     <div class="container py-5">
         <div class="mb-4 text-center">
             <h1 class="fw-bold text-primary">Edit Event</h1>
@@ -113,10 +84,5 @@
             </div>
         </form>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
 
 @endsection
