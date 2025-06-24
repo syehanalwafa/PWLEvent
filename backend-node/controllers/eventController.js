@@ -13,10 +13,11 @@ const upload = multer({ storage });
 exports.createEvent = async (req, res) => {
     try {
         console.log('Uploaded file:', req.file);  // Debugging: Pastikan file terupload
+        console.log('User from token:', req.user);
 
         const { name, date, time, location, speaker, registration_fee, max_participants } = req.body;
         const poster_url = req.file ? req.file.filename : null; // Jika ada gambar, simpan nama file gambar
-        const created_by = req.user ? req.user.id : null; // Menyimpan ID pengguna yang sedang login
+        const created_by = req.user ? req.user.user_id : null; // Menyimpan ID pengguna yang sedang login
 
         const [result] = await pool.query(
             'INSERT INTO events (name, date, time, location, speaker, registration_fee, max_participants, created_at, updated_at, poster_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)',

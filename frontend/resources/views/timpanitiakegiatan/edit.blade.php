@@ -1,27 +1,50 @@
 @extends('layouts.index')
 @extends('timpanitiakegiatan.sidebar')
 @section('content')
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Event</title>
-    
-    <!-- Menambahkan Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Edit Event</h1>
 
-        <!-- Form untuk mengedit event -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-label {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .img-thumbnail {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container py-5">
+        <div class="mb-4 text-center">
+            <h1 class="fw-bold text-primary">Edit Event</h1>
+        </div>
+
         <form action="{{ url('/panitia-kegiatan/events/'.$event['event_id']) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
-            <div class="card shadow-lg p-4">
-                <h4 class="mb-4">Event Information</h4>
+            <div class="card bg-white shadow-sm p-4">
+                <h4 class="mb-4 text-muted">Event Information</h4>
 
                 <!-- Event Name -->
                 <div class="mb-3">
@@ -68,23 +91,32 @@
                 <!-- Event Poster -->
                 <div class="mb-3">
                     <label for="poster_url" class="form-label">Event Poster</label>
-                    <input type="file" class="form-control" name="poster_url">
+
                     @if($event['poster_url'])
-                        <div class="mt-2">
-                            <img src="{{ 'http://localhost:5000/uploads/' . $event['poster_url'] }}" alt="Current Poster" class="img-thumbnail" style="width: 150px;">
-                            <p class="mt-2">Current Poster</p>
+                        <div class="text-center mb-3">
+                            <p class="fw-semibold">Current Poster</p>
+                            <img src="{{ 'http://localhost:5000/uploads/' . $event['poster_url'] }}"
+                                 alt="Current Poster"
+                                 class="img-thumbnail shadow"
+                                 style="max-width: 250px;">
                         </div>
                     @endif
+
+                    <input type="file" class="form-control" name="poster_url">
                 </div>
 
-                <button type="submit" class="btn btn-primary">Update Event</button>
-                <a href="{{ url('/panitia-kegiatan/events') }}" class="btn btn-secondary ms-2">Cancel</a>
+                <!-- Action Buttons -->
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a href="{{ url('/panitia-kegiatan/events') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Event</button>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Menambahkan Bootstrap JS -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 @endsection

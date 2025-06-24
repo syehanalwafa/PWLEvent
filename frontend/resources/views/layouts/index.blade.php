@@ -70,6 +70,7 @@
   <body>
 
 <div class="main-panel">
+  @yield('sidebar')  <!-- Sidebar muncul di sini -->
     @include('layouts.main-header')  <!-- Menyertakan header utama -->
     
     <div class="container">

@@ -174,8 +174,12 @@ Route::post('/panitia-kegiatan/events', function (Request $request) {
     }
 
     // Kirim sebagai multipart
-    $response = Http::asMultipart()
-        ->post('http://localhost:5000/api/events/create', $multipartData);
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])
+    ->asMultipart()
+    ->post('http://localhost:5000/api/events/create', $multipartData);
+
 
     if ($response->successful()) {
         return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil dibuat');
@@ -233,7 +237,11 @@ Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
         ];
     }
 
-    $response = Http::asMultipart()->post("http://localhost:5000/api/events/{$id}", $multipart);
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])
+    ->asMultipart()
+    ->post("http://localhost:5000/api/events/{$id}", $multipart);
 
     if ($response->successful()) {
         return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil diperbarui');
@@ -271,7 +279,11 @@ Route::post('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
     }
 
     // Kirim ke backend Node.js
-    $response = Http::asMultipart()->post("http://localhost:5000/api/events/{$id}", $multipart);
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])
+    ->asMultipart()
+    ->post("http://localhost:5000/api/events/{$id}", $multipart);
 
     if ($response->successful()) {
         return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil diperbarui');
