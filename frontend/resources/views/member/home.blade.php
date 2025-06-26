@@ -55,7 +55,7 @@
         <p>Anda sedang mengakses sebagai <strong>{{ session('role') }}</strong>.</p>
 
         <!-- Cards Section -->
-        <div class="row g-3 mt-5">
+        <div class="row">
             @foreach ($events as $event)
                 <div class="col-md-4">
                     <div class="card">
@@ -64,17 +64,25 @@
                             <h5 class="card-title">{{ $event['name'] }}</h5>
                             <p class="card-text">{{ \Carbon\Carbon::parse($event['date'])->format('d-m-Y') }}</p>
                             <p class="card-text">{{ $event['location'] }}</p>
-                            
-                            <!-- Member can buy tickets directly -->
-                            {{-- <a href="{{ route('event.show', $event['event_id']) }}" class="btn btn-primary">Lihat Detail</a>
-                            <a href="{{ route('buy-ticket', $event['event_id']) }}" class="btn btn-success">Beli Tiket</a> --}}
+
+                            <!-- Aksi Member -->
+<form method="POST" action="/member/events/{{ $event['event_id'] }}/register">
+    @csrf
+    <button class="btn btn-primary w-100 mb-2">Beli Tiket</button>
+</form>
+                            <a href="/member/payment/{{ $event['event_id'] }}" class="btn btn-warning w-100">Upload Bukti Pembayaran</a>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
     </div>
-    <form method="POST" action="/logout">@csrf <button>Logout</button></form>
+
+    <!-- Logout -->
+    <form method="POST" action="/logout" class="mt-4 text-center">
+        @csrf
+        <button class="btn btn-danger">Logout</button>
+    </form>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

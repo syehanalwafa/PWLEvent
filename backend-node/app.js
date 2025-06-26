@@ -4,6 +4,7 @@ require('dotenv').config();
 const app = express();
 const methodOverride = require('method-override');
 const authRoutes = require('./routes/authRoutes'); // Import file route auth
+const path = require('path');
 
 // Konfigurasi CORS yang lebih spesifik (contoh)
 const corsOptions = {
@@ -35,3 +36,6 @@ app.use(methodOverride('_method'));
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Backend on port ${PORT}`));
     
+const eventController = require('./controllers/eventController');
+
+app.use('/api/events', require('./routes/eventRoutes'));

@@ -3,6 +3,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\MemberController;
+
 
 // Guest routes
 Route::get('/', function () {
@@ -42,30 +44,49 @@ if ($response->successful()) {
     return redirect('/login')->with('error', 'Login gagal. Cek email dan password.');
 });
 
-// Rute untuk Member
-Route::get('/member', function () {
-    return view('member.member');  // Halaman untuk Member
-})->name('member');
+// Rute Home Member
 
-// Route for member to buy tickets
+// Halaman utama member (daftar event)
 Route::get('/member', function () {
     $events = Http::get('http://localhost:5000/api/events')->json();
     return view('member.home', compact('events'));
-});
+})->name('member.home');
+
+// Beli tiket & generate QR (POST)
+Route::post('/member/events/{id}/register', [MemberController::class, 'registerEvent'])
+    ->name('member.register');
+
+// Tampilkan form upload bukti bayar (GET)
+Route::get('/member/payment/{id}', [MemberController::class, 'showUploadForm'])
+    ->name('member.payment.form');
+
+// Upload bukti pembayaran (POST)
+Route::post('/member/payment/{id}', [MemberController::class, 'uploadProof'])
+    ->name('member.payment.upload');
+
+// Lihat QR Code setelah beli tiket
+Route::get('/member/qr/{id}', [MemberController::class, 'showQr'])
+    ->name('member.qr');
+
+// Logout manual (optional, jika belum pakai Laravel Auth)
+Route::post('/logout', function () {
+    session()->flush();
+    return redirect('/member'); // atau arahkan ke login kalau sudah ada
+})->name('logout');
 
 // Menampilkan data user
 Route::get('/admin', function () {
     // Mengambil data pengguna dengan role 'Tim Keuangan' dan 'Panitia Kegiatan' dari API Node.js
     $response = Http::get('http://localhost:5000/api/admin/users');  // Mengambil pengguna dari API Node.js
-    
+
     if ($response->successful()) {
         $users = $response->json()['users']; // Mengambil data users dari response
-        
+
         // Filter hanya menampilkan pengguna dengan role 'Tim Keuangan' dan 'Panitia Kegiatan'
         $filteredUsers = array_filter($users, function($user) {
             return $user['role'] == 'Tim Keuangan' || $user['role'] == 'panitia pelaksana kegiatan';
         });
-        
+
         return view('administrator.admin', compact('filteredUsers')); // Mengirimkan data ke view
     }
     return redirect('/login')->with('error', 'Gagal mengambil data pengguna');
@@ -323,4 +344,6 @@ Route::post('/logout', function () {
     Session::flush();
     return redirect('/login');
 });
+
+
 
