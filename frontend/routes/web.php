@@ -5,6 +5,13 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\MemberController;
 
+// Letakkan di sini
+$withToken = function($request) {
+    return Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ]);
+};
+
 
 // Guest routes
 Route::get('/', function () {
@@ -15,34 +22,75 @@ Route::get('/', function () {
 
 // Route detail event (untuk guest dan member)
 Route::get('/events/{id}', function ($id) {
-    $response = Http::get("http://localhost:5000/api/events/{$id}");
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])->get("http://localhost:5000/api/events/{$id}");
+
     if ($response->successful()) {
         $event = (object) $response->json();
+
+        // Gunakan Session::get('role') untuk menentukan tampilan
+        if (Session::get('role') === 'Member') {
+            return view('member.events', compact('event'));
+        }
+
         return view('guest.event', compact('event'));
     }
+
     return redirect('/')->with('error', 'Event tidak ditemukan');
 })->name('event.show');
+
+
+
+// Route detail event khusus member
+Route::get('/member/events/{id}', function ($id) use ($withToken) {
+    if (Session::get('role') !== 'Member') {
+        return redirect('/')->with('error', 'Akses ditolak');
+    }
+
+    $response = $withToken(request())->get("http://localhost:5000/api/events/{$id}");
+    if ($response->successful()) {
+        $event = (object) $response->json();
+        return view('member.events', compact('event'));
+    }
+
+    return redirect('/member')->with('error', 'Event tidak ditemukan');
+})->name('member.event.show');
+
+
 
 Route::view('/register', 'guest.register')->name('register');
 
 Route::view('/login', 'auth.login')->name('login');
 
-Route::post('/login', function (\Illuminate\Http\Request $request) {
-$response = Http::post('http://localhost:5000/api/auth/login', [
-    'email' => $request->email,
-    'password' => $request->password,
-]);
 
-if ($response->successful()) {
-    // Pastikan menggunakan response yang benar dan memparse data JSON dengan baik
-    Session::put('token', $response['token']);
-    Session::put('role', $response['role']);
-    Session::put('name', $response['name']);  // Memastikan 'name' dari JSON disimpan dengan benar
+Route::post('/login', function (Request $request) {
+    $response = Http::post('http://localhost:5000/api/auth/login', [
+        'email' => $request->email,
+        'password' => $request->password,
+    ]);
+    \Log::info('Response dari backend:', $response->json());
 
-    return redirect($response['redirectUrl']);
-}
+    if ($response->successful()) {
+        $data = $response->json();
+
+        Session::put('token', $data['token'] ?? null);
+        Session::put('role', $data['role'] ?? null);
+        Session::put('name', $data['name'] ?? null);
+
+        // Cek apakah 'id' ada
+        if (isset($data['id'])) {
+            Session::put('user_id', $data['id']);
+        } else {
+            logger()->warning('Login berhasil tapi "id" tidak ditemukan dalam response.', $data);
+        }
+
+        return redirect($data['redirectUrl'] ?? '/'); // fallback ke halaman utama jika tidak ada redirectUrl
+    }
+
     return redirect('/login')->with('error', 'Login gagal. Cek email dan password.');
 });
+
 
 // Rute Home Member
 

@@ -66,11 +66,9 @@
                             <p class="card-text">{{ $event['location'] }}</p>
 
                             <!-- Aksi Member -->
-<form method="POST" action="/member/events/{{ $event['event_id'] }}/register">
-    @csrf
-    <button class="btn btn-primary w-100 mb-2">Beli Tiket</button>
-</form>
-                            <a href="/member/payment/{{ $event['event_id'] }}" class="btn btn-warning w-100">Upload Bukti Pembayaran</a>
+                            <a href="{{ route('member.event.show', $event['event_id']) }}">
+                                <button class="btn btn-primary">Lihat Detail</button>
+                            </a>
                         </div>
                     </div>
                 </div>

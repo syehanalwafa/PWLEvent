@@ -1,37 +1,37 @@
 const express = require('express');
 const router = express.Router();
 const eventController = require('../controllers/eventController');
-const upload = require('../config/multerConfig'); // ✅ Sudah cukup
-const { authenticateToken } = require('../middleware/auth'); // Middleware auth
+const upload = require('../config/multerConfig');
+const { authenticateToken } = require('../middleware/auth');
 
-// Route untuk mendapatkan semua event
+// Public
 router.get('/', eventController.getEvents);
 
-// Route untuk mendapatkan event berdasarkan ID
-router.get('/:id', eventController.getEventById);
+// Detail event (hanya bisa diakses user login)
+router.get('/:id', authenticateToken, eventController.getEventById);
 
-// Update event
-router.put('/:id', upload.single('poster_url'), eventController.updateEvent);
-
-// Create event
+// Create event (panitia)
 router.post('/create', authenticateToken, upload.single('poster_url'), eventController.createEvent);
 
-// Method spoofing (Laravel form)
+// Update event (panitia)
+router.put('/:id', upload.single('poster_url'), eventController.updateEvent);
+
+// Laravel method spoofing
 router.post('/:id', upload.single('poster_url'), eventController.updateEvent);
 
-// Hapus event
+// Delete event (panitia)
 router.delete('/:id', eventController.deleteEvent);
+
+// Registrasi event (member)
+router.post('/:event_id/register', authenticateToken, eventController.registerEvent);
 
 // Upload bukti pembayaran
 router.post('/payment-proof/:registration_id', upload.single('proof'), eventController.uploadPaymentProof);
 
-// Verifikasi pembayaran
+// Verifikasi pembayaran (admin atau tim keuangan)
 router.put('/payment-verification/:id', eventController.verifyPayment);
 
-// Kehadiran
+// Check-in peserta (panitia)
 router.post('/attend', eventController.attendEvent);
-
-// Registrasi event
-router.post('/:event_id/register', eventController.registerEvent);
 
 module.exports = router;

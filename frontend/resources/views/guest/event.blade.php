@@ -14,15 +14,16 @@
         }
 
         .navbar-custom {
-            background-color: #007bff;
+            background-color: #1d3557; /* Dark blue background */
         }
 
         .navbar-custom .navbar-nav .nav-link {
             color: white;
+            font-weight: bold;
         }
 
         .navbar-custom .navbar-nav .nav-link:hover {
-            color: #ffc107;
+            color: #ffc107; /* Yellow hover color */
         }
 
         .container {
@@ -53,10 +54,9 @@
         }
 
         .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-            padding: 12px 24px;
-            font-size: 16px;
+            background-color: #1d3557;
+            border-color: #1d3557;
+            font-weight: bold;
         }
 
         .btn-primary:hover {
@@ -141,7 +141,10 @@
                         <!-- Check if user is authenticated -->
                         @auth
                             <!-- If authenticated (as a member) -->
-                            <a href="{{ route('buy-ticket', $event->id) }}" class="btn btn-success">Beli Tiket</a>
+                            <form action="{{ route('member.register', $event->event_id ?? $event->id) }}" method="POST">
+                                @csrf
+                                <button class="btn btn-success">Beli Tiket</button>
+                            </form>
                         @else
                             <!-- If not authenticated (guest) -->
                             <a href="{{ route('login') }}" class="btn btn-warning">Login untuk Beli Tiket</a>

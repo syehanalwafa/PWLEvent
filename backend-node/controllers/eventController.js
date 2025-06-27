@@ -107,7 +107,7 @@ exports.deleteEvent = async (req, res) => {
 
 // Fungsi untuk registrasi event + generate QR
 exports.registerEvent = async (req, res) => {
-  const { id } = req.body; // user id dari frontend
+  const id = req.user.id; // id user dari token JWT
   const eventId = req.params.event_id;
 
   try {
