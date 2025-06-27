@@ -243,34 +243,28 @@ Route::get('/tim-keuangan', function () {
 
 // Rute untuk Tim Panitia Kegiatan
 Route::get('/panitia-kegiatan', function () {
-    // Pastikan pengguna sudah login dan memiliki role 'panitia pelaksana kegiatan'
-        // Mengambil data event dari backend API
-        $response = Http::get('http://localhost:5000/api/events');  // Gantilah dengan URL API yang benar
+    // Ambil daftar event menggunakan token
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token'),
+    ])->get('http://localhost:5000/api/events');
 
-        // Jika API berhasil memberikan data
-        if ($response->successful()) {
-            $events = $response->json();  // Mengambil data event dalam bentuk array
+    if ($response->successful()) {
+        $events = $response->json();
+        return view('timpanitiakegiatan.dashboard', ['events' => $events]);
+    }
 
-            // Kirim data ke view
-            return view('timpanitiakegiatan.dashboard', ['events' => $events]);  // Akses 'data' jika respons mengandung key 'data'
-        } else {
-            // Jika API gagal, tampilkan pesan error
-            return redirect('/login')->with('error', 'Gagal mengambil data event');
-        }
-
-    return redirect('/login')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+    return redirect('/login')->with('error', 'Gagal mengambil data event');
 })->name('panitia-kegiatan');
 
-// CRUD routes untuk event (misalnya jika kamu ingin tetap mempertahankan controller untuk CRUD)
-// Rute untuk menampilkan form create event menggunakan metode GET
+// Rute untuk form create event
 Route::get('/panitia-kegiatan/events/create', function () {
     return view('timpanitiakegiatan.create');
 });
-// Handle event creation form submission (POST)
+
+// Handle submit event baru
 Route::post('/panitia-kegiatan/events', function (Request $request) {
     $multipartData = [];
 
-    // Tambahkan semua field selain file
     foreach ([
         'name', 'date', 'time', 'location',
         'speaker', 'registration_fee', 'max_participants'
@@ -281,7 +275,6 @@ Route::post('/panitia-kegiatan/events', function (Request $request) {
         ];
     }
 
-    // Cek apakah file dikirim
     if ($request->hasFile('poster_url')) {
         $multipartData[] = [
             'name'     => 'poster_url',
@@ -290,13 +283,11 @@ Route::post('/panitia-kegiatan/events', function (Request $request) {
         ];
     }
 
-    // Kirim sebagai multipart
     $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . Session::get('token')
+        'Authorization' => 'Bearer ' . Session::get('token'),
     ])
     ->asMultipart()
     ->post('http://localhost:5000/api/events/create', $multipartData);
-
 
     if ($response->successful()) {
         return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil dibuat');
@@ -305,22 +296,26 @@ Route::post('/panitia-kegiatan/events', function (Request $request) {
     return redirect('/panitia-kegiatan/events')->with('error', 'Gagal membuat event');
 });
 
-// Route untuk menampilkan daftar event (GET)
+// Daftar semua event
 Route::get('/panitia-kegiatan/events', function () {
-    $response = Http::get('http://localhost:5000/api/events');  // Mengambil data event dari backend API
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token'),
+    ])->get('http://localhost:5000/api/events');
 
     if ($response->successful()) {
-        $events = $response->json();  // Mengambil data event dalam bentuk array
+        $events = $response->json();
         return view('timpanitiakegiatan.dashboard', compact('events'));
     }
 
     return redirect('/panitia-kegiatan')->with('error', 'Gagal mengambil daftar event');
 });
 
-
-
+// Edit event (GET)
 Route::get('/panitia-kegiatan/events/{id}/edit', function ($id) {
-    $response = Http::get("http://localhost:5000/api/events/{$id}");
+    \Log::info('Session token:', [Session::get('token')]);
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token'),
+    ])->get("http://localhost:5000/api/events/{$id}");
 
     if ($response->successful()) {
         $event = $response->json();
@@ -328,6 +323,44 @@ Route::get('/panitia-kegiatan/events/{id}/edit', function ($id) {
     }
 
     return redirect('/panitia-kegiatan/events')->with('error', 'Gagal mengambil data event');
+});
+
+// Update event (PUT spoofed via POST)
+Route::post('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
+    $multipart = [];
+
+    foreach (['name', 'date', 'time', 'location', 'speaker', 'registration_fee', 'max_participants'] as $field) {
+        $multipart[] = [
+            'name' => $field,
+            'contents' => $request->input($field),
+        ];
+    }
+
+    $multipart[] = [
+        'name' => '_method',
+        'contents' => 'PUT',
+    ];
+
+    if ($request->hasFile('poster_url')) {
+        $file = $request->file('poster_url');
+        $multipart[] = [
+            'name'     => 'poster_url',
+            'contents' => fopen($file->getPathname(), 'r'),
+            'filename' => $file->getClientOriginalName(),
+        ];
+    }
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token'),
+    ])
+    ->asMultipart()
+    ->post("http://localhost:5000/api/events/{$id}", $multipart);
+
+    if ($response->successful()) {
+        return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil diperbarui');
+    }
+
+    return redirect("/panitia-kegiatan/events/{$id}/edit")->with('error', 'Gagal memperbarui event');
 });
 
 Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
@@ -340,6 +373,7 @@ Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
         ];
     }
 
+    // Spoof method untuk backend Node.js
     $multipart[] = [
         'name' => '_method',
         'contents' => 'PUT',
@@ -355,7 +389,7 @@ Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
     }
 
     $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . Session::get('token')
+        'Authorization' => 'Bearer ' . Session::get('token'),
     ])
     ->asMultipart()
     ->post("http://localhost:5000/api/events/{$id}", $multipart);
@@ -367,50 +401,12 @@ Route::put('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
     return redirect("/panitia-kegiatan/events/{$id}/edit")->with('error', 'Gagal memperbarui event');
 });
 
-// Route POST untuk update event (dari form edit)
-Route::post('/panitia-kegiatan/events/{id}', function (Request $request, $id) {
-    $multipart = [];
 
-    // Tambahkan semua field form ke multipart
-    foreach (['name', 'date', 'time', 'location', 'speaker', 'registration_fee', 'max_participants'] as $field) {
-        $multipart[] = [
-            'name' => $field,
-            'contents' => $request->input($field),
-        ];
-    }
-
-    // Override method ke PUT
-    $multipart[] = [
-        'name' => '_method',
-        'contents' => 'PUT',
-    ];
-
-    // Jika ada file poster
-    if ($request->hasFile('poster_url')) {
-        $file = $request->file('poster_url');
-        $multipart[] = [
-            'name'     => 'poster_url',
-            'contents' => fopen($file->getPathname(), 'r'),
-            'filename' => $file->getClientOriginalName(),
-        ];
-    }
-
-    // Kirim ke backend Node.js
-    $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . Session::get('token')
-    ])
-    ->asMultipart()
-    ->post("http://localhost:5000/api/events/{$id}", $multipart);
-
-    if ($response->successful()) {
-        return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil diperbarui');
-    }
-
-    return redirect("/panitia-kegiatan/events/{$id}/edit")->with('error', 'Gagal memperbarui event');
-});
-
+// Delete event
 Route::delete('/panitia-kegiatan/events/{id}', function ($id) {
-    $response = Http::delete("http://localhost:5000/api/events/{$id}");
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token'),
+    ])->delete("http://localhost:5000/api/events/{$id}");
 
     if ($response->successful()) {
         return redirect('/panitia-kegiatan/events')->with('success', 'Event berhasil dihapus');

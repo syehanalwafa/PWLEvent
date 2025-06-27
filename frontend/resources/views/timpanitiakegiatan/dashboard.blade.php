@@ -19,8 +19,10 @@
                             <p class="card-text">{{ \Carbon\Carbon::parse($event['date'])->format('d-m-Y') }}</p>
                             <p class="card-text">{{ $event['location'] }}</p>
 
+                            {{-- Tombol Update --}}
                             <a href="{{ url('/panitia-kegiatan/events/'.$event['event_id'].'/edit') }}" class="btn btn-primary">Update</a>
 
+                            {{-- Form Delete --}}
                             <form action="{{ url('/panitia-kegiatan/events/'.$event['event_id']) }}" method="POST" style="display:inline;">
                                 @csrf
                                 @method('DELETE')

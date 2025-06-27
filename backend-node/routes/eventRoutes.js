@@ -14,24 +14,24 @@ router.get('/:id', authenticateToken, eventController.getEventById);
 router.post('/create', authenticateToken, upload.single('poster_url'), eventController.createEvent);
 
 // Update event (panitia)
-router.put('/:id', upload.single('poster_url'), eventController.updateEvent);
+router.put('/:id', authenticateToken, upload.single('poster_url'), eventController.updateEvent);
 
 // Laravel method spoofing
-router.post('/:id', upload.single('poster_url'), eventController.updateEvent);
+router.post('/:id', authenticateToken, upload.single('poster_url'), eventController.updateEvent);
 
 // Delete event (panitia)
-router.delete('/:id', eventController.deleteEvent);
+router.delete('/:id', authenticateToken, eventController.deleteEvent);
 
 // Registrasi event (member)
 router.post('/:event_id/register', authenticateToken, eventController.registerEvent);
 
 // Upload bukti pembayaran
-router.post('/payment-proof/:registration_id', upload.single('proof'), eventController.uploadPaymentProof);
+router.post('/payment-proof/:registration_id', authenticateToken, upload.single('proof'), eventController.uploadPaymentProof);
 
 // Verifikasi pembayaran (admin atau tim keuangan)
-router.put('/payment-verification/:id', eventController.verifyPayment);
+router.put('/payment-verification/:id', authenticateToken, eventController.verifyPayment);
 
 // Check-in peserta (panitia)
-router.post('/attend', eventController.attendEvent);
+router.post('/attend', authenticateToken, eventController.attendEvent);
 
 module.exports = router;

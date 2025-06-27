@@ -1,6 +1,6 @@
 // controllers/adminController.js
 const User = require('../models/User'); // Mengimpor model User
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Fungsi untuk mendapatkan semua pengguna
 exports.getUsers = async (req, res) => {
