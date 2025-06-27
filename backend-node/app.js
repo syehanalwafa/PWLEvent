@@ -39,3 +39,5 @@ app.listen(PORT, () => console.log(`Backend on port ${PORT}`));
 const eventController = require('./controllers/eventController');
 
 app.use('/api/events', require('./routes/eventRoutes'));
+
+app.use('/api/keuangan', require('./routes/keuanganRoutes'));

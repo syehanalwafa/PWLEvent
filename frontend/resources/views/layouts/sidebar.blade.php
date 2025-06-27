@@ -3,11 +3,8 @@
     <div class="sidebar-logo">
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
-            <a href="index.html" class="logo">
-                <img src="{{ asset('assets/img/kaiadmin/LogoSidebar.png') }}"
-                    alt="navbar brand"
-                    class="navbar-brand"
-                    height="40" />
+            <a href="{{ url('/') }}" class="logo text-white text-decoration-none fw-bold fs-4 ms-3">
+                Tiketin
             </a>
             <div class="nav-toggle">
                 <button class="btn btn-toggle toggle-sidebar">
@@ -23,7 +20,6 @@
         </div>
         <!-- End Logo Header -->
     </div>
-    <!-- Sidebar Menu -->
     <div class="sidebar-menu">
         <ul>
             <!-- Menu untuk Dashboard Admin, hanya muncul jika user adalah admin -->

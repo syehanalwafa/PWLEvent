@@ -14,11 +14,12 @@
         }
 
         .navbar-custom {
-            background-color: #007bff;
+            background-color: #1d3557;
         }
 
         .navbar-custom .navbar-nav .nav-link {
             color: white;
+            font-weight: bold;
         }
 
         .navbar-custom .navbar-nav .nav-link:hover {
@@ -80,8 +81,7 @@
 
     <!-- Main Content -->
     <div class="container">
-        <h1>Selamat Datang di Sistem Event</h1>
-        <p>Anda sedang mengakses sebagai <strong>{{ session('role') }}</strong>.</p>
+        <h1>Selamat Datang di Tiketin</h1>
 
         <!-- Cards Section -->
         <div class="row">

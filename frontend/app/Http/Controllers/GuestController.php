@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\ApiService;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class GuestController extends Controller
 {
@@ -30,15 +32,13 @@ class GuestController extends Controller
     // Method untuk menampilkan detail event berdasarkan ID
     public function showEvent($id)
     {
-        // Mendapatkan data event berdasarkan ID
-        $event = $this->apiService->getEventById($id);
+    $response = Http::get("http://localhost:5000/api/events/guest/{$id}");
 
-        if ($event === null) {
-            // Tangani kesalahan jika event tidak ditemukan
-            return view('error', ['message' => 'Event not found.']);
-        }
+    if ($response->successful()) {
+        $event = (object) $response->json();
+        return view('guest.event', compact('event'));
+    }
 
-        // Mengirim data event ke view event.blade.php
-        return view('guest.event', ['event' => $event]);
+    return redirect('/')->with('error', 'Event tidak ditemukan');
     }
 }

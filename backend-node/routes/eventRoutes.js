@@ -7,6 +7,9 @@ const { authenticateToken } = require('../middleware/auth');
 // Public
 router.get('/', eventController.getEvents);
 
+// Detail event (untuk guest, tanpa token)
+router.get('/guest/:id', eventController.getEventById);
+
 // Detail event (hanya bisa diakses user login)
 router.get('/:id', authenticateToken, eventController.getEventById);
 

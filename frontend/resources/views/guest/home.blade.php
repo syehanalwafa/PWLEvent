@@ -173,7 +173,8 @@
                                 <a href="{{ route('buy-ticket', $event['event_id']) }}" class="btn btn-success">Beli Tiket</a>
                             @else
                                 <!-- If not authenticated (guest) -->
-                                <a href="{{ route('event.show', $event['event_id']) }}" class="btn btn-warning">More Info</a>
+                                <!-- Jika belum login (guest), gunakan tombol warna kuning -->
+                                <a href="{{ route('guest.event.show', $event['event_id']) }}" class="btn btn-warning">Lihat Detail</a>
                             @endauth
                         </div>
                     </div>

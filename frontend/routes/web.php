@@ -19,6 +19,9 @@ Route::get('/', function () {
     return view('guest.home', compact('events'));
 });
 
+// Route khusus Guest (tanpa token)
+Route::get('/guest/events/{id}', [GuestController::class, 'showEvent'])->name('guest.event.show');
+
 
 // Route detail event (untuk guest dan member)
 Route::get('/events/{id}', function ($id) {
@@ -238,8 +241,37 @@ Route::post('/admin/users/{id}/activate', function ($id) {
 
 // Rute untuk Tim Keuangan
 Route::get('/tim-keuangan', function () {
-    return view('timkeuangan.tim-keuangan');  // Halaman untuk Tim Keuangan
-})->name('tim-keuangan');
+    if (Session::get('role') !== 'Tim Keuangan') {
+        return redirect('/login')->with('error', 'Akses hanya untuk Tim Keuangan');
+    }
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])->get('http://localhost:5000/api/keuangan/pembayaran');
+
+    if ($response->successful()) {
+        $payments = $response->json()['payments'];
+        return view('timkeuangan.dashboard', compact('payments'));
+    }
+
+    return redirect('/login')->with('error', 'Gagal mengambil data pembayaran');
+})->name('timkeuangan.dashboard');
+
+Route::post('/tim-keuangan/verify/{id}', function ($id) {
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])->post("http://localhost:5000/api/keuangan/pembayaran/{$id}/verify");
+
+    return back()->with($response->successful() ? 'success' : 'error', $response->json()['message']);
+})->name('timkeuangan.verify');
+
+Route::post('/tim-keuangan/reject/{id}', function ($id) {
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . Session::get('token')
+    ])->post("http://localhost:5000/api/keuangan/pembayaran/{$id}/reject");
+
+    return back()->with($response->successful() ? 'success' : 'error', $response->json()['message']);
+})->name('timkeuangan.reject');
 
 // Rute untuk Tim Panitia Kegiatan
 Route::get('/panitia-kegiatan', function () {
