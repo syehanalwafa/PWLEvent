@@ -83,7 +83,7 @@
                         @if (Session::get('role') === 'Member')
                             <form action="{{ route('member.register', $event->event_id ?? $event->id) }}" method="POST">
                                 @csrf
-                                <button class="btn btn-success">Beli Tiket</button>
+                                <a href="{{ route('member.register.form', $event->event_id ?? $event->id) }}" class="btn btn-success">Beli Tiket</a>
                             </form>
                         @else
                             <a href="{{ route('login') }}" class="btn btn-warning">Login untuk Beli Tiket</a>

@@ -8,19 +8,19 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Konfirmasi Registrasi Event</h2>
+        <h2 class="mb-4">Konfirmasi Registrasi Event</h2>
 
         <div class="alert alert-info">
-            Anda akan melakukan registrasi untuk event dengan ID: <strong>{{ $id }}</strong>
+            Anda akan melakukan registrasi untuk event: <strong>{{ $event->name }}</strong><br>
+            Tanggal: {{ \Carbon\Carbon::parse($event->date)->format('d-m-Y') }}<br>
+            Lokasi: {{ $event->location }}<br>
+            Biaya: Rp {{ number_format($event->registration_fee, 0, ',', '.') }}
         </div>
 
-        <form action="{{ route('member.register', $id) }}" method="POST">
+        <form action="{{ route('member.register', $event->event_id ?? $event->id) }}" method="POST">
             @csrf
 
-            <div class="mb-3">
-                <label for="confirm" class="form-label">Apakah Anda yakin ingin mendaftar event ini?</label>
-                <input type="hidden" name="confirm" value="yes">
-            </div>
+            <input type="hidden" name="confirm" value="yes">
 
             <button type="submit" class="btn btn-success">Ya, Daftar Sekarang</button>
             <a href="{{ route('member.home') }}" class="btn btn-secondary">Batal</a>

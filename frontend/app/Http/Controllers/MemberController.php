@@ -27,29 +27,39 @@ class MemberController extends Controller
 
     public function registerEvent(Request $request, $id)
 {
-    $userId = Session::get('user_id'); // GANTI ini sesuai yang kamu simpan saat login
+    $userId = Session::get('user_id');
 
     if (!$userId) {
-        return redirect()->route('login'); // fallback kalau belum login
+        return redirect()->route('login');
     }
 
+    // Kirim data ke API untuk registrasi event
     $response = Http::post("http://localhost:5000/api/events/$id/register", [
         'id' => $userId,
     ]);
 
     if ($response->failed()) {
-        return redirect()->back()->withErrors('Gagal melakukan registrasi');
+        return redirect()->back()->withErrors('Gagal melakukan registrasi.');
     }
 
-    $qr_code = $response->json()['qr_code'];
-    return view('member.qr', compact('qr_code'));
+    // Ambil registration_id dari response
+    $registration_id = $response->json()['registration_id'] ?? null;
+
+    if (!$registration_id) {
+        return redirect()->route('member.home')->with('error', 'Registrasi berhasil, namun ID tidak ditemukan.');
+    }
+
+    // Redirect langsung ke form upload bukti pembayaran
+    return redirect()->route('member.payment.form', $registration_id);
 }
+
+
     public function listRegistrations()
     {
-        $userId = Session::get('user_id'); // GANTI ini sesuai yang kamu simpan saat login
+        $userId = Session::get('user_id');
 
         if (!$userId) {
-            return redirect()->route('login'); // fallback kalau belum login
+            return redirect()->route('login');
         }
 
         $response = Http::get("http://localhost:5000/api/registrations/$userId");
@@ -60,7 +70,7 @@ class MemberController extends Controller
 
         $registrations = $response->json();
         return view('member.registrations', compact('registrations'));
-    }   
+    }
 
     public function showUploadForm($id)
     {
@@ -85,12 +95,26 @@ class MemberController extends Controller
             return redirect()->back()->withErrors('Upload gagal.');
         }
 
-        return redirect()->route('member.events')->with('success', 'Bukti pembayaran berhasil diupload.');
+        // Ambil QR dari response jika tersedia
+        $qr_code = $response->json()['qr_code'] ?? null;
+
+        if (!$qr_code) {
+            return redirect()->route('member.home')->with('success', 'Upload berhasil. QR Code akan tersedia setelah verifikasi.');
+        }
+
+        Session::put('qr_code', $qr_code);
+
+        return redirect()->route('member.qr', $registration_id);
     }
 
     public function showQr($id)
     {
         $qr_code = session('qr_code');
+
+        if (!$qr_code) {
+            return redirect()->route('member.home')->with('error', 'QR Code belum tersedia.');
+        }
+
         return view('member.qr', compact('qr_code'));
     }
 }

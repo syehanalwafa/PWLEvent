@@ -100,6 +100,22 @@ Route::get('/member', function () {
     return view('member.home', compact('events'));
 })->name('member.home');
 
+// Form konfirmasi pembelian tiket
+Route::get('/member/events/{id}/register', function ($id) use ($withToken) {
+    if (Session::get('role') !== 'Member') {
+        return redirect('/login')->with('error', 'Harap login sebagai Member');
+    }
+
+    $response = $withToken(request())->get("http://localhost:5000/api/events/{$id}");
+
+    if ($response->successful()) {
+        $event = (object) $response->json();
+        return view('member.register', compact('event'));
+    }
+
+    return redirect('/member')->with('error', 'Event tidak ditemukan');
+})->name('member.register.form');
+
 // Beli tiket & generate QR (POST)
 Route::post('/member/events/{id}/register', [MemberController::class, 'registerEvent'])
     ->name('member.register');
@@ -116,11 +132,7 @@ Route::post('/member/payment/{id}', [MemberController::class, 'uploadProof'])
 Route::get('/member/qr/{id}', [MemberController::class, 'showQr'])
     ->name('member.qr');
 
-// Logout manual (optional, jika belum pakai Laravel Auth)
-Route::post('/logout', function () {
-    session()->flush();
-    return redirect('/member'); // atau arahkan ke login kalau sudah ada
-})->name('logout');
+Route::post('/member/payment/{id}', [MemberController::class, 'uploadProof'])->name('member.payment.upload');
 
 // Menampilkan data user
 Route::get('/admin', function () {
@@ -158,6 +170,25 @@ Route::post('/admin/users', function (\Illuminate\Http\Request $request) {
 
 
 // update
+Route::post('/admin/users/{id}', function (Request $request, $id) {
+    $response = Http::put("http://localhost:5000/api/admin/users/{$id}", $request->all());
+
+    if ($response->successful()) {
+        return redirect('/admin')->with('success', 'Pengguna berhasil diperbarui');
+    }
+
+    return redirect("/admin/users/{$id}/edit")->with('error', 'Gagal memperbarui pengguna');
+});
+
+Route::put('/admin/users/{id}', function (Request $request, $id) {
+    $response = Http::put("http://localhost:5000/api/admin/users/{$id}", $request->all());
+
+    if ($response->successful()) {
+        return redirect('/admin')->with('success', 'Pengguna berhasil diperbarui');
+    }
+
+    return redirect("/admin/users/{$id}/edit")->with('error', 'Gagal memperbarui pengguna');
+});
 // Route untuk menampilkan form edit pengguna
 Route::get('/admin/users/{id}/edit', function ($id) {
     // Mengambil data pengguna berdasarkan ID dari API Node.js

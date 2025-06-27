@@ -25,6 +25,11 @@
             color: #ffc107;
         }
 
+        .navbar-brand {
+            font-weight: bold;
+            color: white;
+        }
+
         .card-body {
             background-color: #f9f9f9;
         }
@@ -36,16 +41,40 @@
         .card {
             margin-top: 20px;
         }
+
+        .btn-logout {
+            border: 1px solid white;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-logout:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+
+    <!-- Navbar with Logout -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand text-white" href="#">Tiketin</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" href="#">Tiketin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <form method="POST" action="/logout" class="d-flex">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-logout">Logout</button>
+                        </form>
+
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -64,23 +93,13 @@
                             <h5 class="card-title">{{ $event['name'] }}</h5>
                             <p class="card-text">{{ \Carbon\Carbon::parse($event['date'])->format('d-m-Y') }}</p>
                             <p class="card-text">{{ $event['location'] }}</p>
-
-                            <!-- Aksi Member -->
-                            <a href="{{ route('member.event.show', $event['event_id']) }}">
-                                <button class="btn btn-primary">Lihat Detail</button>
-                            </a>
+                            <a href="{{ route('member.event.show', $event['event_id']) }}" class="btn btn-primary">Lihat Detail</a>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
     </div>
-
-    <!-- Logout -->
-    <form method="POST" action="/logout" class="mt-4 text-center">
-        @csrf
-        <button class="btn btn-danger">Logout</button>
-    </form>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
